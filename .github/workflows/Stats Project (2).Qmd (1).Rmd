@@ -1,0 +1,288 @@
+---
+title: "Stats Project"
+output: html_document
+date: "2024-10-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+library(ggplot2)
+library(dplyr)
+
+# Adding postseason scores
+cbb5 <- cbb %>% mutate(postseason_score = case_when(
+  POSTSEASON == "R68" ~ 1,
+  POSTSEASON == "R64" ~ 2,
+  POSTSEASON == "R32" ~ 3,
+  POSTSEASON == "S16" ~ 4,
+  POSTSEASON == "E8" ~ 5,
+  POSTSEASON == "F4" ~ 6,
+  POSTSEASON == "2ND" ~ 7,
+  POSTSEASON == "Champions" ~ 8,
+  .default = 0
+))
+
+# Summing postseason scores for each team
+cbb2 <- cbb5 %>% group_by(TEAM) %>% summarise(pst = sum(postseason_score, na.rm = TRUE))
+
+# Merging with the adjusted dataset
+cbb3 <- cbb_adj %>% left_join(cbb2, by = "TEAM")
+
+# Preview the result
+head(cbb3)
+
+```
+```{r}
+
+#Filters out teams that have not been in the same conference for 10 years
+cbbCONF <- cbb %>% 
+  group_by(TEAM, CONF) %>%
+  count() %>%  
+  filter(n==10)
+
+head(cbb)
+  
+```
+
+
+```{r}
+#Joins the filtered out conferences with the average stats and post season score. 
+cbbjoined <- cbbCONF %>% 
+  inner_join(cbb3)
+
+head(cbbjoined)
+
+```
+```{r}
+cbb_new<-cbbjoined%>%
+  group_by(CONF)%>%
+summarize(pst=mean(pst))%>%
+  inner_join(cbbjoined)
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+all_offense_mod <- (lm(pst ~ EFG_O + TOR + ORB + FTR + `2P_O` + `3P_O`, cbbjoined))
+all_defense_mod <- (lm(pst ~ EFG_D + TORD + DRB + FTRD + `2P_D` + `3P_D`, cbbjoined))
+all_variable_mod<-(lm(pst ~ EFG_O+EFG_D+TOR+TORD+ORB+DRB+FTR+FTRD+`2P_O`+`2P_D`+`3P_O`+`3P_D`,cbbjoined))
+
+
+
+model1<-lm(formula = pst ~ TOR, data = cbbjoined)
+model2<-lm(formula = pst ~ TORD+ADJDE+EFG_D+DRB+FTRD, data = cbbjoined)
+model3<-lm(formula=pst~TOR+CONF,data=cbbjoined)
+model4<-lm(formula=pst~TORD+CONF,data=cbbjoined)
+summary(model1)
+summary(model2)
+summary(model3)
+summary(model4)
+summary(all_offense_mod)
+summary(all_defense_mod)
+summary(all_variable_mod)
+
+ggplot(all_variable_mod,aes(x=EFG_O,y=pst))+
+  geom_point()+
+  geom_smooth(method="lm",formula=y~x,se=FALSE)
+
+ggplot(cbbjoined, aes(x = TOR, y = pst)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE) +
+  labs(title = "Scatterplot of pst vs TOR",
+       x = "Turnovers per game(TOR)",
+       y = "Performance Score (pst)") +
+  theme_minimal()
+
+ggplot(cbbjoined, aes(x = TORD, y = pst)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE) +
+  labs(title = "Scatterplot of pst vs TORD",
+       x = "Turnovers forced per game(TORD)",
+       y = "Performance Score (pst)") +
+  theme_minimal()
+
+
+ggplot(cbbjoined, aes(x = TOR, y = pst,color=CONF)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE) + 
+  labs(
+    title = "Scatterplot of pst vs TOR by Conference",
+    x = "Turnovers per game (TOR)",
+    y = "Wins(W)"
+  ) +
+facet_wrap(~CONF)
+
+
+ggplot(cbbjoined, aes(x = TORD, y = pst,color=CONF)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE) + 
+  labs(
+    title = "Scatterplot of pst vs TORD by Conference",
+    x = "Turnovers forced per game (TORD)",
+    y = "Wins(W)"
+  ) +
+facet_wrap(~CONF)
+
+
+
+
+
+
+
+
+```
+
+```{r}
+#Zachs
+#Offense Only Model
+
+lm_mod <- lm(pst ~ EFG_O, cbbjoined)
+summary(lm_mod)
+
+cbbjoined %>% 
+  ggplot(aes(x=EFG_O, y=pst))+
+  geom_point()+
+  geom_smooth(se = F, method= "lm")+
+  labs(x = "Effective Field Goal % Shot", y= "Postseason Total Score")
+```
+
+```{r}
+#Defense Only Model
+defense_mod <- lm(pst ~ EFG_D, cbbjoined)
+summary(defense_mod)
+
+cbbjoined %>% 
+  ggplot(aes(x=EFG_D, y=pst))+
+  geom_point()+
+  geom_smooth(se = F, method= "lm")
+```
+
+```{r}
+#Check Conference additive term
+conference_modOff <- lm(pst ~ EFG_O + CONF, cbbjoined)
+summary(conference_modOff)
+
+conference_modDef <- lm(pst ~ EFG_D + CONF, cbbjoined)
+summary(conference_modDef)
+
+```
+```{r}
+#Conference facet wrapped graph
+
+cbbjoined %>% 
+  ggplot(aes(x = EFG_O, y = pst, color = CONF)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~ CONF)+
+  theme_minimal()+
+  labs(x = "Effective Field Goal %", y= "Post Season Total")
+
+cbbjoined %>% 
+  ggplot(aes(x = EFG_D, y = pst, color = CONF)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~ CONF)+
+  theme_minimal()+
+  labs(x = "Effective Field Goal % Allowed ", y= "Post Season Total")
+```
+
+
+```
+```{r}
+
+ggplot(cbbjoined,aes(x=`3P_O`,y=pst))+
+  geom_point()+
+  geom_smooth(method = "lm", se=FALSE)+
+  labs(x = '3-Point Percentage',y = 'Postseason Score',title='3-Point Percentage vs Postseason Score')
+ggplot(cbbjoined,aes(x=`3P_D`,y=pst))+
+  geom_point()+
+  geom_smooth(method = "lm", se=FALSE)+
+  labs(x = '3-Point Percentage Allowed',y = 'Postseason Score',title='3-Point Percentage Allowed vs Postseason Score')
+
+ThreePOModel<-lm(pst~`3P_O`,data=cbbjoined)
+summary(ThreePOModel)
+ThreePDModel<-lm(pst~`3P_D`,data=cbbjoined)
+summary(ThreePDModel)
+```
+
+```{r}
+#Nicks code
+linear_model <- lm(pst ~ FTR +FTRD, cbbjoined)
+coef(linear_model)
+
+linear_model_2 <- lm(pst ~ W, cbbjoined)
+coef(linear_model_2)
+
+ggplot(cbbjoined, aes(x = FTR, y = pst)) +
+  geom_point(alpha = 0.6, color = "blue") +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red") +
+  labs(title = "Scatterplot of pst vs FTR",
+       x = "Free Throw Rate (FTR)",
+       y = "Performance Score (pst)") +
+  theme_minimal()
+
+selected_ticks <- seq(min(cbbjoined$W), max(cbbjoined$W), length.out = 6)
+
+ggplot(cbbjoined, aes(x = as.factor(W), y = pst)) +
+  geom_boxplot(fill = "lightblue", color = "darkblue") +
+  labs(title = "Boxplot of pst by Wins (W)",
+       x = "Wins (W)",
+       y = "Performance Score (pst)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0, hjust = 1)) +
+  scale_x_discrete(breaks = as.character(round(selected_ticks)))
+
+
+```
+```{r}
+
+```
+
+```
+```{r}
+cbbjoined <- cbbjoined %>%
+  mutate(PowerSix = ifelse(CONF %in% c("B10", "B12", "BE", "SEC", "P12", "ACC"), "Power Six", "Other"))
+
+cbbjoined %>%
+  ggplot(aes(x = EFG_D, y = pst, color = PowerSix)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~ PowerSix) +
+  theme_minimal() +
+  labs(
+    x = "Effective Field Goal % Allowed",
+    y = "Post Season Total",
+    color = "Conference Type",
+    title = "Comparison of Power Six vs Other Conferences"
+  )
+
+
+cbbjoined <- cbbjoined %>% ungroup() %>% 
+  mutate(FG_zscore = scale(EFG_O),
+         TOR_zscore = scale(TOR), 
+         ORB_zscore = scale(ORB),
+         FTR_zscore = scale(FTR),
+         twoPFG_zscore = scale(`2P_O`),
+         threePFG_zscore = scale(`3P_O`),
+         Total_zscoreO = rowSums(across(c(FG_zscore, TOR_zscore, ORB_zscore, FTR_zscore, twoPFG_zscore, threePFG_zscore)))
+)
+
+cbbjoined <- cbbjoined %>% ungroup() %>% 
+  mutate(FGD_zscore = scale(EFG_D),
+         TORD_zscore = scale(TORD), 
+         DRB_zscore = scale(DRB),
+         FTRD_zscore = scale(FTRD),
+         twoPFGD_zscore = scale(`2P_D`),
+         threePFGD_zscore = scale(`3P_D`),
+)
+```
+
