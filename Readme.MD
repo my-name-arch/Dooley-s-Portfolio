@@ -1,5 +1,5 @@
 
-A repository of the projects I worked on or currently working on. It is updated regularly. The projects are mostly done in R Studio, with a few in Python and Power BI.Click on the projects to see full analysis and code.
+This is A repository of the projects I worked on or currently working on. It is updated regularly. The projects are mostly done in R Studio, with a few in Python and Power BI.Click on the projects to see full analysis and code.
 
 Please contact me on LinkedIn if you are looking to hire a data scientist
 
