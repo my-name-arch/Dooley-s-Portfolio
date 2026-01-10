@@ -1,0 +1,477 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+# Load necessary library
+library(dplyr)
+library(readr)
+
+# Load the dataset from this website https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset
+
+df <- read_csv("dataset.csv")
+
+# Merge tracks by track_id without using "mean"
+merged_df <- df %>%
+  group_by(track_id) %>%
+  summarise(
+    artists = first(artists),
+    album_name = first(album_name),
+    track_name = first(track_name),
+    popularity = max(popularity),      # Keep the highest popularity score found
+    duration_ms = first(duration_ms),
+    explicit = any(explicit == "True"), # True if any entry is explicit
+    danceability = first(danceability),
+    energy = first(energy),
+    key = first(key),
+    loudness = first(loudness),
+    mode = first(mode),
+    speechiness = first(speechiness),
+    acousticness = first(acousticness),
+    instrumentalness = first(instrumentalness),
+    liveness = first(liveness),
+    valence = first(valence),
+    tempo = first(tempo),
+    time_signature = first(time_signature),
+    # Combine unique genres into a single comma-separated string
+    track_genre = paste(unique(track_genre), collapse = ", ")
+  ) %>%
+  ungroup()
+
+# Save the merged dataset
+write_csv(merged_df, "merged_dataset_r.csv")
+```
+```{r}
+# Install packages
+library(tidyverse)
+library(cluster)      # to build the hierarchichal clustering algorithm
+library(factoextra)   # to draw the dendrograms
+```
+
+```{r}
+
+
+# Omit missing cases (this can be bad if there are a lot of missing points!)
+merged_df <- na.omit(merged_df)
+
+# Impute the missing cases
+library(VIM)
+merged_df <-merged_df %>%
+  VIM::kNN(imp_var = FALSE)
+
+
+```
+
+```{r}
+library(tidyverse)
+
+# 1. Add a temporary ID so we can match the dummies back to the original rows
+merged_df <- merged_df %>% mutate(row_id = row_number())
+
+# 2. Create the dummy variables
+genre_dummies <- merged_df %>%
+  select(row_id, track_genre) %>%
+  # Split the column into multiple rows based on the comma
+  separate_rows(track_genre, sep = ",\\s*") %>% 
+  # Create a indicator column
+  mutate(value = 1) %>%
+  # Pivot into a wide format (one column per genre)
+  pivot_wider(names_from = track_genre, 
+              values_from = value, 
+              values_fill = 0, 
+              names_prefix = "genre_")
+
+# 3. Join back to the original dataframe and remove the temporary ID
+merged_df <- merged_df %>%
+  left_join(genre_dummies, by = "row_id") %>%
+  select(-row_id)
+```
+
+```{r}
+# 1. Create a numeric-only dataframe for the algorithm
+numeric_data <- merged_df %>% 
+  select(where(is.numeric)) %>%
+  scale()
+
+# 2. Run the model
+set.seed(333)
+kmeans_model <- kmeans(numeric_data, centers = 11500)
+# 3. Add the cluster assignments back to your ORIGINAL dataframe
+# This "attaches" the results to the names of the songs and artists
+merged_df$cluster <- kmeans_model$cluster
+
+# 4. View the results including the categorical columns
+results <- merged_df %>%
+  select(cluster, track_name, artists, album_name, popularity, everything()) %>%
+  arrange(cluster)
+
+head(results)
+
+```
+```{r}
+
+library(dplyr)
+library(stringr)
+library(readr)
+
+# 1. Calculate distances and attach to the INDIVIDUAL results (89,740 rows)
+centers_matrix <- kmeans_model$centers[kmeans_model$cluster, ]
+distances <- sqrt(rowSums((numeric_data - centers_matrix)^2))
+
+# IMPORTANT: Attach to 'results' first to avoid the size mismatch error
+results$dist_to_center <- distances
+
+# 2. Create the combined_df with average musical features
+combined_df <- results %>%
+  group_by(track_name, artists) %>%
+  summarise(
+    # Basic info
+    cluster = first(cluster),
+    track_id = first(track_id),
+    explicit = any(explicit == TRUE),
+    popularity = max(popularity),
+    
+    # Text data aggregation
+    album_name = first(album_name),
+    track_genre = first(track_genre),
+
+    # AUTOMATIC ENCODING: This averages tempo, valence, energy, etc.
+    # It finds all numeric columns and calculates the mean for the song
+    across(where(is.numeric) & !c(cluster, popularity), mean, na.rm = TRUE),
+    
+    .groups = "drop"
+  )
+
+# 3. View the final unified dataset
+View(combined_df)
+write_csv(combined_df, "Unified_Music_Analysis_Final.csv")
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(readr)
+
+# 1. Create the Slimmed-Down Cluster Master Profile
+cluster_stats <- combined_df %>%
+  group_by(cluster) %>%
+  summarise(
+    # How many unique songs are in this cluster
+    song_count = n(),
+    
+    # Measure of 'Tightness' (Closeness)
+    # 100% means all songs are at the exact same point
+    avg_similarity = mean(100 * (1 - dist_to_center), na.rm = TRUE),
+    
+    # Measure of variation (Standard Deviation)
+    pop_sd = sd(popularity, na.rm = TRUE),
+    tempo_sd = sd(tempo, na.rm = TRUE),
+    
+    # AUTOMATICALLY ENCODE MUSICAL AVERAGES ONLY
+    # This creates columns like avg_tempo, avg_energy, avg_valence, etc.
+    across(
+      .cols = c(popularity, tempo, valence, liveness, instrumentalness, 
+                acousticness, speechiness, loudness, energy, danceability, duration_ms),
+      .fns = mean, 
+      .names = "avg_{.col}",
+      na.rm = TRUE
+    ),
+    
+    .groups = "drop"
+  ) %>%
+  arrange(desc(avg_similarity))
+
+# 2. Export this leaner Master Profile
+write_csv(cluster_stats, "Cluster_Master_Profile_Clean.csv")
+
+# 3. View the top performing clusters
+head(cluster_stats)
+```
+
+```{r}
+# This creates a frequency table of cluster sizes
+size_counts <- table(cluster_stats$song_count)
+
+# View the table
+print(size_counts)
+
+# To programmatically pick the mode:
+mode_size <- as.numeric(names(size_counts)[which.max(size_counts)])
+cat("The most common cluster size (mode) is:", mode_size, "songs.\n")
+
+```
+
+```{r}
+library(shiny)
+library(dplyr)
+library(ggplot2)
+library(DT)
+library(tidyr)
+
+# --- Helper Functions ---
+
+# Convert milliseconds to MM:SS format
+format_duration <- function(ms) {
+  seconds <- floor(ms / 1000)
+  minutes <- floor(seconds / 60)
+  seconds_rem <- seconds %% 60
+  sprintf("%d:%02d", minutes, seconds_rem)
+}
+
+# --- UI Definition ---
+ui <- fluidPage(
+  tags$head(
+    tags$style(HTML("
+      /* Midnight Gradient Background */
+      body {
+        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%) fixed;
+        color: #f8f9fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+      
+      /* Dark container for readability */
+      .table-container {
+        background-color: rgba(0, 0, 0, 0.75); 
+        padding: 25px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+      
+      /* Sidebar styling */
+      .well { 
+        background-color: rgba(255, 255, 255, 0.05) !important; 
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(15px);
+      }
+      
+      .nav-tabs .nav-link.active {
+        background-color: #7b2ff7 !important;
+        border-color: #7b2ff7 !important;
+        color: white !important;
+      }
+      
+      /* Colorful Genre Tags */
+      .genre-tag {
+        display: inline-block;
+        background: #7b2ff7;
+        padding: 2px 10px;
+        border-radius: 20px;
+        margin: 3px;
+        font-size: 0.85em;
+        font-weight: bold;
+      }
+
+      /* AGGRESSIVE TABLE SHRINKING FOR THE BLACK BOX */
+      #cluster_averages_table table {
+        color: white !important;
+        margin-top: -15px; 
+        width: 100% !important;
+        table-layout: fixed;
+      }
+      #cluster_averages_table th, #cluster_averages_table td {
+        padding: 4px 2px !important; 
+        font-size: 0.75em !important;
+        text-align: center !important;
+        word-wrap: break-word;
+      }
+    "))
+  ),
+  
+  titlePanel(h1("🎵 Music Suggestions", style = "font-weight: 800; padding: 10px;")),
+  
+  sidebarLayout(
+    sidebarPanel(
+      h4("Step 1: Find a Song"),
+      textInput("song_search", "Track Name:", value = ""),
+      textInput("artist_search", "Artist Name:", value = ""),
+      actionButton("search_btn", "Search", class = "btn-primary", style="background-color: #7b2ff7; border: none; width: 100%;"),
+      
+      hr(),
+      uiOutput("song_selector_ui"),
+      
+      hr(),
+      uiOutput("cluster_info")
+    ),
+    
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Recommendations", 
+                 div(class = "table-container", 
+                     DTOutput("recommendation_table")
+                 )),
+        
+        tabPanel("Cluster Comparison", 
+                 div(class = "table-container",
+                     plotOutput("cluster_traits_plot"),
+                     hr(),
+                     h4("Exact Musical Averages", style="margin-bottom: 20px;"),
+                     tableOutput("cluster_averages_table")
+                 ))
+      )
+    )
+  )
+)
+
+# --- Server Logic ---
+server <- function(input, output, session) {
+  
+  # 1. Search Logic
+  matches <- eventReactive(input$search_btn, {
+    req(input$song_search)
+    combined_df %>%
+      filter(
+        grepl(input$song_search, track_name, ignore.case = TRUE),
+        grepl(input$artist_search, artists, ignore.case = TRUE)
+      ) %>%
+      mutate(display_label = paste0(track_name, " - ", artists, " (", album_name, ")")) %>%
+      arrange(desc(popularity))
+  })
+  
+  # 2. Dynamic Selection UI
+  output$song_selector_ui <- renderUI({
+    req(matches())
+    if (nrow(matches()) == 0) return(p("No songs found. Try a different search."))
+    
+    tagList(
+      h4("Step 2: Select Version"),
+      selectInput("selected_display", "Found matches:", choices = matches()$display_label)
+    )
+  })
+  
+  # 3. Selected Song Object
+  selected_song <- reactive({
+    req(input$selected_display)
+    matches() %>% filter(display_label == input$selected_display) %>% slice(1)
+  })
+  
+  # 4. Filter Cluster Members
+  cluster_members <- reactive({
+    req(selected_song())
+    combined_df %>%
+      filter(cluster == selected_song()$cluster) %>%
+      mutate(Duration = format_duration(duration_ms)) %>%
+      arrange(desc(popularity))
+  })
+  
+  # 5. Sidebar Summary
+  output$cluster_info <- renderUI({
+    req(selected_song(), cluster_members())
+    
+    top_genres <- cluster_members() %>%
+      count(track_genre, sort = TRUE) %>%
+      head(4) %>%
+      pull(track_genre)
+    
+    tagList(
+      h4("Current Focus:"),
+      p(strong(selected_song()$track_name), " by ", em(selected_song()$artists)),
+      p("Main Genre: ", span(style="color: #b388ff; font-weight: bold;", selected_song()$track_genre)),
+      hr(),
+      h5("Inside this Cluster:"),
+      p("Musical variety includes:"),
+      lapply(top_genres, function(g) span(class="genre-tag", g)),
+      br(), br(),
+      p("Total Songs: ", strong(nrow(cluster_members()))),
+      p("Avg Popularity: ", strong(round(mean(cluster_members()$popularity, na.rm = TRUE), 1)))
+    )
+  })
+  
+  # 6. Recommendation Table
+  output$recommendation_table <- renderDT({
+    req(cluster_members())
+    cluster_members() %>%
+      select(track_name, artists, track_genre, Duration, popularity) %>%
+      rename(Track = track_name, Artist = artists, Genre = track_genre) %>%
+      datatable(options = list(pageLength = 10, scrollX = TRUE), 
+                rownames = FALSE, 
+                style = "bootstrap4")
+  })
+  
+  # 7. Comparison Plot
+  output$cluster_traits_plot <- renderPlot({
+    req(selected_song())
+    traits <- c("danceability", "energy", "speechiness", "acousticness", "instrumentalness", "liveness", "valence")
+    
+    cluster_avg <- combined_df %>%
+      filter(cluster == selected_song()$cluster) %>%
+      summarise(across(all_of(traits), mean, na.rm = TRUE)) %>%
+      mutate(Type = "Cluster Avg")
+    
+    global_avg <- combined_df %>%
+      summarise(across(all_of(traits), mean, na.rm = TRUE)) %>%
+      mutate(Type = "Global Avg")
+    
+    plot_data <- bind_rows(cluster_avg, global_avg) %>%
+      pivot_longer(cols = all_of(traits), names_to = "Trait", values_to = "Value")
+    
+    ggplot(plot_data, aes(x = Trait, y = Value, fill = Type)) +
+      geom_col(position = "dodge") +
+      geom_text(aes(label = round(Value, 2)), 
+                position = position_dodge(width = 0.9), 
+                vjust = -0.5, color = "white", size = 4) +
+      scale_fill_manual(values = c("#7b2ff7", "#6c757d")) + 
+      theme_minimal() +
+      ylim(0, 1.1) +
+      theme(
+        text = element_text(color = "white"),
+        axis.text = element_text(color = "white", size = 11),
+        panel.grid.major = element_line(color = "#ffffff22"),
+        panel.grid.minor = element_blank(),
+        legend.position = "bottom",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.background = element_rect(fill = "transparent", color = NA),
+        plot.margin = margin(t = 5, r = 5, b = 0, l = 5) 
+      ) +
+      labs(title = "Cluster vs. Global Traits", x = NULL, y = NULL)
+  }, bg = "transparent")
+  
+  # 8. Detailed Numeric Averages Table
+  output$cluster_averages_table <- renderTable({
+    req(selected_song())
+    traits <- c("danceability", "energy", "speechiness", "acousticness", "instrumentalness", "liveness", "valence")
+    
+    combined_df %>%
+      filter(cluster == selected_song()$cluster) %>%
+      summarise(across(all_of(traits), mean, na.rm = TRUE)) %>%
+      rename_with(tools::toTitleCase)
+  }, digits = 3, width = "100%")
+}
+
+# --- Run App ---
+shinyApp(ui, server)
+```
+
+```{r}
+library(dplyr)
+
+# Calculate how many unique genres are in EACH cluster
+cluster_diversity <- combined_df %>%
+  group_by(cluster) %>%
+  summarise(
+    num_unique_genres = n_distinct(track_genre),
+    genres_present = paste(unique(track_genre), collapse = ", "),
+    total_songs = n()
+  ) %>%
+  arrange(desc(num_unique_genres))
+
+# 1. Filter for clusters that have more than 1 genre
+multi_genre_clusters <- cluster_diversity %>% 
+  filter(num_unique_genres > 1)
+
+# 2. View the summary of diverse clusters
+print(head(multi_genre_clusters, 10))
+
+# 3. If you find a diverse one (e.g., Cluster 42), view it:
+# combined_df %>% filter(cluster == 42) %>% View()
+```
+
+```{r}
+library(dplyr)
+
+combined_df %>%
+  filter(cluster == 8601) %>%
+  View()
+```
+
