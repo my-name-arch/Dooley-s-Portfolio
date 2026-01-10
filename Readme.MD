@@ -25,7 +25,7 @@ The Determinants of March Madness Success project investigates whether offense o
 The technical workflow, implemented in R Studio, involved advanced data wrangling with dplyr and the engineering of a "Postseason Score" (PST) to weight tournament progress. The methodology focused on standardizing statistics through Z-score normalization, allowing for objective comparisons across different team styles and eras. Using linear regression modeling and conference segmentation, the analysis successfully demonstrated a causal link between defensive performance—specifically Effective Field Goal Percentage Allowed—and championship-level success, proving that defensive consistency is a superior predictor of March Madness Success.
 
 [Music Suggestion Application](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/MusicRecs.Rmd)
-View the demo video: [Google Drive Link](https://drive.google.com/file/d/1-XFW0a-M3kWb344YoHAHhmhxqID5gpMD/view?usp=sharing)
+View the demo video: [Demo Video](https://drive.google.com/file/d/1-XFW0a-M3kWb344YoHAHhmhxqID5gpMD/view?usp=sharing)
 
 This Music Suggestion algorithm is an interactive application that recommends songs based on a specific input. The project’s primary objective is to identify the most similar tracks, allowing users to discover new music effortlessly. By utilizing a Shiny app, I’ve transformed these recommendations into a dynamic and interactive user experience.
 
