@@ -3,7 +3,7 @@ This is A repository of the projects I worked on or currently working on. It is 
 
 Please contact me on LinkedIn if you are looking to hire a data scientist
 
-[Telefonica Seguros: BI Intelligence Dashboard](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/RealDATA.pbix)
+[Telefonica Seguros: BI Intelligence Dashboard](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/RealDATA%20(4).pdf)
 
 To Access Click View Raw.
 
