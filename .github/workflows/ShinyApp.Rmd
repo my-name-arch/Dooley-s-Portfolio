@@ -1,0 +1,258 @@
+---
+title: "Spotify Recommendation Dashboard"
+output: html_notebook
+runtime: shiny
+---
+
+### Setup Environment
+This script mounts rendering frameworks and processes the optimized file structure from Notebook 1.
+```{r context="setup", include=FALSE}
+library(shiny)
+library(dplyr)
+library(ggplot2)
+library(DT)
+library(tidyr)
+library(readr)
+
+# Read the output generated directly by Notebook 1
+combined_df <- read_csv("Unified_Music_Analysis_Final.csv")
+
+# Helper function to convert ms into clean time strings
+format_duration <- function(ms) {
+  seconds <- floor(ms / 1000)
+  minutes <- floor(seconds / 60)
+  seconds_rem <- seconds %% 60
+  sprintf("%d:%02d", minutes, seconds_rem)
+}
+```
+
+```{r}
+# --- UI Layout Design ---
+ui <- fluidPage(
+  tags$head(
+    tags$style(HTML("
+      /* Midnight Gradient Background */
+      body {
+        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%) fixed;
+        color: #f8f9fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+      
+      /* Dark container for readability */
+      .table-container {
+        background-color: rgba(0, 0, 0, 0.75); 
+        padding: 25px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+      
+      /* Sidebar styling */
+      .well { 
+        background-color: rgba(255, 255, 255, 0.05) !important; 
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(15px);
+      }
+      
+      .nav-tabs .nav-link.active {
+        background-color: #7b2ff7 !important;
+        border-color: #7b2ff7 !important;
+        color: white !important;
+      }
+      
+      /* Colorful Genre Tags */
+      .genre-tag {
+        display: inline-block;
+        background: #7b2ff7;
+        padding: 2px 10px;
+        border-radius: 20px;
+        margin: 3px;
+        font-size: 0.85em;
+        font-weight: bold;
+      }
+
+      /* Aggressive table constraints for text alignment */
+      #cluster_averages_table table {
+        color: white !important;
+        margin-top: -15px; 
+        width: 100% !important;
+        table-layout: fixed;
+      }
+      #cluster_averages_table th, #cluster_averages_table td {
+        padding: 4px 2px !important; 
+        font-size: 0.75em !important;
+        text-align: center !important;
+        word-wrap: break-word;
+      }
+    "))
+  ),
+  
+  titlePanel(h1("🎵 Music Suggestions", style = "font-weight: 800; padding: 10px;")),
+  
+  sidebarLayout(
+    sidebarPanel(
+      h4("Step 1: Find a Song or Artist"),
+      textInput("song_search", "Track Name (Optional):", value = ""),
+      textInput("artist_search", "Artist Name:", value = ""),
+      actionButton("search_btn", "Search", class = "btn-primary", style="background-color: #7b2ff7; border: none; width: 100%;"),
+      
+      hr(),
+      uiOutput("song_selector_ui"),
+      
+      hr(),
+      uiOutput("cluster_info")
+    ),
+    
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Recommendations", 
+                 div(class = "table-container", 
+                     DTOutput("recommendation_table")
+                 )),
+        
+        tabPanel("Cluster Comparison", 
+                 div(class = "table-container",
+                     plotOutput("cluster_traits_plot"),
+                     hr(),
+                     h4("Exact Musical Averages", style="margin-bottom: 20px;"),
+                     tableOutput("cluster_averages_table")
+                 ))
+      )
+    )
+  )
+)
+
+# --- App Functional Engine Server Logic ---
+server <- function(input, output, session) {
+  
+  # 1. Search Filtering Execution (Enforces "Starts With" constraints)
+  matches <- eventReactive(input$search_btn, {
+    req(input$artist_search != "" || input$song_search != "")
+    
+    # Prepend the regex anchor token "^" to enforce matching from the starting index character position
+    pattern_artist <- paste0("^", input$artist_search)
+    pattern_song   <- paste0("^", input$song_search)
+    
+    combined_df %>%
+      filter(
+        grepl(pattern_artist, artists, ignore.case = TRUE),
+        grepl(pattern_song, track_name, ignore.case = TRUE)
+      ) %>%
+      mutate(display_label = paste0(artists, " - ", track_name, " (", album_name, ")")) %>%
+      arrange(desc(popularity))
+  })
+  
+  # 2. Dynamic Option Selection Population
+  output$song_selector_ui <- renderUI({
+    req(matches())
+    if (nrow(matches()) == 0) return(p("No matches found starting with that name. Try a different search."))
+    
+    tagList(
+      h4("Step 2: Choose a Reference Track"),
+      selectInput("selected_display", "Select a starting track:", choices = matches()$display_label)
+    )
+  })
+  
+  # 3. Active Target Extraction
+  selected_song <- reactive({
+    req(input$selected_display)
+    matches() %>% filter(display_label == input$selected_display) %>% slice(1)
+  })
+  
+  # 4. Cohort Isolation
+  cluster_members <- reactive({
+    req(selected_song())
+    combined_df %>%
+      filter(cluster == selected_song()$cluster) %>%
+      mutate(Duration = format_duration(duration_ms)) %>%
+      arrange(desc(popularity))
+  })
+  
+  # 5. Summary Metadata Card Assembly
+  output$cluster_info <- renderUI({
+    req(selected_song(), cluster_members())
+    
+    top_genres <- cluster_members() %>%
+      count(track_genre, sort = TRUE) %>%
+      head(4) %>%
+      pull(track_genre)
+    
+    tagList(
+      h4("Current Focus:"),
+      p(strong(selected_song()$track_name), " by ", em(selected_song()$artists)),
+      p("Main Genre: ", span(style="color: #b388ff; font-weight: bold;", selected_song()$track_genre)),
+      hr(),
+      h5("Inside this Cluster:"),
+      p("Musical variety includes:"),
+      lapply(top_genres, function(g) span(class="genre-tag", g)),
+      br(), br(),
+      p("Total Songs: ", strong(nrow(cluster_members()))),
+      p("Avg Popularity: ", strong(round(mean(cluster_members()$popularity, na.rm = TRUE), 1)))
+    )
+  })
+  
+  # 6. Primary Recommendation Grid
+  output$recommendation_table <- renderDT({
+    req(cluster_members())
+    cluster_members() %>%
+      select(track_name, artists, track_genre, Duration, popularity) %>%
+      rename(Track = track_name, Artist = artists, Genre = track_genre) %>%
+      datatable(options = list(pageLength = 10, scrollX = TRUE), 
+                rownames = FALSE, 
+                style = "bootstrap4")
+  })
+  
+  # 7. Cluster Benchmark Feature Graphing
+  output$cluster_traits_plot <- renderPlot({
+    req(selected_song())
+    traits <- c("danceability", "energy", "speechiness", "acousticness", "instrumentalness", "liveness", "valence")
+    
+    cluster_avg <- combined_df %>%
+      filter(cluster == selected_song()$cluster) %>%
+      summarise(across(all_of(traits), mean, na.rm = TRUE)) %>%
+      mutate(Type = "Cluster Avg")
+    
+    global_avg <- combined_df %>%
+      summarise(across(all_of(traits), mean, na.rm = TRUE)) %>%
+      mutate(Type = "Global Avg")
+    
+    plot_data <- bind_rows(cluster_avg, global_avg) %>%
+      pivot_longer(cols = all_of(traits), names_to = "Trait", values_to = "Value")
+    
+    ggplot(plot_data, aes(x = Trait, y = Value, fill = Type)) +
+      geom_col(position = "dodge") +
+      geom_text(aes(label = round(Value, 2)), 
+                position = position_dodge(width = 0.9), 
+                vjust = -0.5, color = "white", size = 4) +
+      scale_fill_manual(values = c("#7b2ff7", "#6c757d")) + 
+      theme_minimal() +
+      ylim(0, 1.1) +
+      theme(
+        text = element_text(color = "white"),
+        axis.text = element_text(color = "white", size = 11),
+        panel.grid.major = element_line(color = "#ffffff22"),
+        panel.grid.minor = element_blank(),
+        legend.position = "bottom",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.background = element_rect(fill = "transparent", color = NA),
+        plot.margin = margin(t = 5, r = 5, b = 0, l = 5) 
+      ) +
+      labs(title = "Cluster vs. Global Traits", x = NULL, y = NULL)
+  }, bg = "transparent")
+  
+  # 8. Metric Value Aggregation Data Spreadsheet
+  output$cluster_averages_table <- renderTable({
+    req(selected_song())
+    traits <- c("danceability", "energy", "speechiness", "acousticness", "instrumentalness", "liveness", "valence")
+    
+    combined_df %>%
+      filter(cluster == selected_song()$cluster) %>%
+      summarise(across(all_of(traits), mean, na.rm = TRUE)) %>%
+      rename_with(tools::toTitleCase)
+  }, digits = 3, width = "100%")
+}
+
+shinyApp(ui, server)
+```
+

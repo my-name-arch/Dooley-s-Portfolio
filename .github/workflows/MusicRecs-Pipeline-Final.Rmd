@@ -1,0 +1,115 @@
+---
+title: "MusicRecs-Pipeline"
+output: html_notebook
+---
+
+### Step 1: Load Libraries and Raw Dataset
+```{r, message=FALSE, warning=FALSE}
+
+library(dplyr)
+library(readr)
+library(tidyverse)
+library(cluster)     
+library(factoextra)  
+
+# DATASET SOURCE:
+# This dataset originates from the Kaggle "Spotify Tracks Dataset" by Maharshi Pandya.
+# URL: [https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset](https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset)
+# It contains ~114,000 tracks pulled via the Spotify Web API.
+
+# Load the dataset (Make sure dataset.csv is in your working directory)
+songs <- read_csv("dataset.csv")
+```
+
+```{r}
+merged_songs <- songs %>%
+  group_by(track_id) %>%
+  summarise(
+    artists = first(artists),
+    album_name = first(album_name),
+    track_name = first(track_name),
+    popularity = max(popularity),      
+    duration_ms = first(duration_ms),
+    explicit = any(explicit == "True"), 
+    danceability = first(danceability),
+    energy = first(energy),
+    key = first(key),
+    loudness = first(loudness),
+    mode = first(mode),
+    speechiness = first(speechiness),
+    acousticness = first(acousticness),
+    instrumentalness = first(instrumentalness),
+    liveness = first(liveness),
+    valence = first(valence),
+    tempo = first(tempo),
+    time_signature = first(time_signature),
+    track_genre = paste(unique(track_genre), collapse = ", ")
+  ) %>%
+  ungroup()
+
+merged_songs <- na.omit(merged_songs)
+```
+
+```{r}
+# 1. Add a temporary ID so we can match the dummies back to the original rows
+merged_songs <- merged_songs %>% mutate(row_id = row_number())
+
+# 2. Create the dummy variables
+genre_dummies <- merged_songs %>%
+  select(row_id, track_genre) %>%
+  separate_rows(track_genre, sep = ",\\s*") %>% 
+  mutate(value = 1) %>%
+  pivot_wider(names_from = track_genre, 
+              values_from = value, 
+              values_fill = 0, 
+              names_prefix = "genre_")
+
+# 3. Join back to the original dataframe and remove the temporary ID
+merged_songs <- merged_songs %>%
+  left_join(genre_dummies, by = "row_id") %>%
+  select(-row_id)
+```
+
+```{r}
+# 1. Create a numeric-only dataframe for the algorithm
+numeric_data <- merged_songs %>% 
+  select(where(is.numeric)) %>%
+  scale()
+
+# 2. Safety Check: Ensure the requested centers do not exceed our distinct row count
+n_distinct_rows <- nrow(unique(numeric_data))
+target_centers <- min(11500, n_distinct_rows - 1)
+
+# 3. Run the model
+set.seed(333)
+kmeans_model <- kmeans(numeric_data, centers = target_centers)
+
+# 4. Add the cluster assignments back to your dataframe
+merged_songs$cluster <- kmeans_model$cluster
+```
+
+```{r}
+# 1. Calculate distances and attach to individual rows
+centers_matrix <- kmeans_model$centers[kmeans_model$cluster, ]
+distances <- sqrt(rowSums((numeric_data - centers_matrix)^2))
+merged_songs$dist_to_center <- distances
+
+# 2. Create the final clean combination dataframe
+cleaned_songs <- merged_songs %>%
+  group_by(track_name, artists) %>%
+  summarise(
+    cluster = first(cluster),
+    track_id = first(track_id),
+    explicit = any(explicit == TRUE),
+    popularity = max(popularity),
+    album_name = first(album_name),
+    track_genre = first(track_genre),
+    across(where(is.numeric) & !c(cluster, popularity), mean, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# This is the file our Shiny notebook reads!
+write_csv(cleaned_songs, "Unified_Music_Analysis_Final.csv")
+print("SUCCESS: Unified_Music_Analysis_Final.csv has been created!")
+```
+
