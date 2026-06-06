@@ -12,7 +12,7 @@ The Telefonica Seguros BI dashboard transformed raw data into a strategic execut
 The analysis was based on a database provided by Telefonica containing five datasets, each with approximately 100,000 data points. The raw data contained significant gaps and formatting inconsistencies; hence, I performed extensive data cleaning and imputation to ensure accuracy. Once the data was cleaned, I conducted Exploratory Data Analysis (EDA) to uncover the underlying trends affecting claim performance.
 
 
- [Python Minesweeper: GUI & Logic Engine](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/FinalProject2.py)
+ [Python Minesweeper: GUI & Logic Engine](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/FinalProject.py)
 
 The Python Minesweeper project is an interactive application that translates classic logic-puzzle mechanics into a functional desktop game. The primary objective was to create the fun and very common computer game, Minesweeper. By implementing automated mine generation and a neighbor-check algorithm, the project successfully provides a seamless and engaging user experience.
 
