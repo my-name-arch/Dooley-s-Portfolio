@@ -29,3 +29,15 @@ Developed in RStudio, the technical workflow began with comprehensive data wrang
 The Python Minesweeper project is an interactive application that translates classic logic-puzzle mechanics into a functional desktop game. The primary objective was to create the fun and very common computer game, Minesweeper. By implementing automated mine generation and a neighbor-check algorithm, the project successfully provides a seamless and engaging user experience.
 
 The technical architecture utilizes multiple python files, leveraging Tkinter for the graphical interface and Canvas for grid rendering. I developed a event-handling system to manage mouse clicks, using coordinate mapping to link visual squares to an underlying logic array. The game features a randomized mine generator and logic that calculates nearby threats in real-time.
+
+[Real Estate Model]
+
+sources
+[UK Housing] https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads
+[GDP Growth] https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/ihyq/pn2
+[Bank Rate] https://www.bankofengland.co.uk/boeapps/database/Bank-Rate.asp
+[CPI] https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceinflation
+[Housing Supply] https://www.gov.uk/government/statistical-data-sets/live-tables-on-house-building table 251A
+
+
+
