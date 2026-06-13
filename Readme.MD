@@ -30,7 +30,7 @@ The Python Minesweeper project is an interactive application that translates cla
 
 The technical architecture utilizes multiple python files, leveraging Tkinter for the graphical interface and Canvas for grid rendering. I developed a event-handling system to manage mouse clicks, using coordinate mapping to link visual squares to an underlying logic array. The game features a randomized mine generator and logic that calculates nearby threats in real-time.
 
-[Real Estate Model] (https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/AutoMl.pdf)
+[Real Estate Model](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/AutoMl.pdf)
 
 3 Parts in Workflows: Building Dataset, Cleaning, and Creating my model.
 
@@ -39,6 +39,7 @@ The UK Real Estate Modeling project leverages cloud-based machine learning to fo
 The technical workflow was engineered entirely within Microsoft Azure Machine Learning Studio. I ingested and blended longitudinal datasets from the Office for National Statistics (ONS), the Bank of England, and the UK Government, managing significant structural variance across the data sources. After feature engineering localized geographic variables and temporal economic indicators, I trained and hyperparameter-tuned an optimized regression model. The final model achieved an $R^2$ score exceeding 0.80, demonstrating that the pipeline successfully accounts for over 80% of the variance in historic English housing prices.
 
 sources
+
 [UK Housing](https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads)
 
 [GDP Growth](https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/ihyq/pn2)
