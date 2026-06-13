@@ -33,11 +33,11 @@ The technical architecture utilizes multiple python files, leveraging Tkinter fo
 [Real Estate Model]
 
 sources
-[UK Housing] https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads
-[GDP Growth] https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/ihyq/pn2
-[Bank Rate] https://www.bankofengland.co.uk/boeapps/database/Bank-Rate.asp
-[CPI] https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceinflation
-[Housing Supply] https://www.gov.uk/government/statistical-data-sets/live-tables-on-house-building table 251A
+[UK Housing] (https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads)
+[GDP Growth] (https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/ihyq/pn2)
+[Bank Rate] (https://www.bankofengland.co.uk/boeapps/database/Bank-Rate.asp)
+[CPI] (https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceinflation)
+[Housing Supply] (https://www.gov.uk/government/statistical-data-sets/live-tables-on-house-building table 251A)
 
 
 
