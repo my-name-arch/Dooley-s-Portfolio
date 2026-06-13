@@ -32,7 +32,7 @@ The technical architecture utilizes multiple python files, leveraging Tkinter fo
 
 [Real Estate Model](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/AutoMl.pdf)
 
-3 Parts in Workflows: Building Dataset, Cleaning, and Creating my model.
+4 Parts in Workflows: Building Dataset, Cleaning, AutoMl, Testing.
 
 The UK Real Estate Modeling project leverages cloud-based machine learning to forecast property valuation trends using 30 years of historical macroeconomic and housing data. The primary objective was to isolate how geographic factors and broader economic indicators—such as inflation, interest rates, and housing supply—simultaneously drive the UK housing market. By integrating disparate datasets, the project provides a macro-micro framework for real estate forecasting and investment risk assessment.
 
