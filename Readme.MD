@@ -1,6 +1,6 @@
 This is a repository of the projects I worked on or currently working on. It is updated regularly. The projects are mostly done in R Studio, with a few in Python and Power BI. Click on the projects to see full analysis and code.
 
-Please contact me on [LinkedIn](https://linkedin.com/in/dooley-kim-809525313/?skipRedirect=true)
+Please contact me on [LinkedIn](https://linkedin.com/in/dooley-kim-809525313)
 
 [Telefonica Seguros: BI Intelligence Dashboard](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/RealDATA%20(4).pdf)
 
