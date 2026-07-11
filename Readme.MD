@@ -1,8 +1,6 @@
-This is a repository of the projects I worked on or currently working on. It is updated regularly. The projects are mostly done in R Studio, with a few in Python and Power BI. Click on the projects to see full analysis and code.
+This is a repository of the projects I worked on or am currently working on. It is updated regularly. Click on the projects to see full analysis and code.
 
-Please contact me on [LinkedIn](https://linkedin.com/in/dooley-kim-809525313)
-
-
+Please contact me on LinkedIn if you are looking to hire a data scientist linkedin.com/in/dooley-kim-809525313
 
 [Telefonica Seguros: BI Intelligence Dashboard](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/RealDATA%20(4).pdf)
 
@@ -62,4 +60,10 @@ The technical architecture utilizes multiple Python files, leveraging Tkinter fo
 The project successfully translated classical logic puzzle mechanics into a functional, lightweight desktop game. By seamlessly connecting the visual front-end grid to the back-end computation engine, the application provides an engaging and responsive user experience that handles complex cascading game logic with zero operational lag.
 
 Building this desktop game required applying strict Object-Oriented Programming (OOP) principles to cleanly separate the visual frontend interface from the backend engine. I engineered an event-driven architecture to handle real-time user input seamlessly, mapping those interactions directly to multi-dimensional array logic that computed state changes on the fly. This project allowed me to gain strong, practical experience with desktop interface rendering using Python, Tkinter, and Canvas.
+
+[PyTorch Transcription Engine](​​https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/app.py)
+
+This hardware-accelerated desktop application utilizes a deep-learning pipeline built on PyTorch to transform raw audio into an intelligent, fully searchable knowledge base. The ingestion workflow streams raw audio formats, normalizes them to a flat 16,000 hertz mono wave array, and utilizes a PyTorch-backed OpenAI Whisper-Small transformer model to decode text strings chronologically with precise, absolute timeline offsets.
+To power the core semantic search capabilities, the architecture implements a dual-stage ranking engine designed to bypass the limitations of simple keyword matching and solve "relevance flattening" errors. First, a sparse lexical retriever runs text frequencies fortified by a custom, phonetically mapped regex layer to capture conversational stumbles and acoustic hallucinations. Simultaneously, a dense neural retriever targets deep conceptual topics by encoding processed passages into normalized vector spaces using the PyTorch-based BGE-Base-en-v1.5 transformer model. Parallel retrieval candidate outputs are combined using Reciprocal Rank Fusion (RRF) and scored via a deep neural BGE-Reranker-Base cross-encoder to isolate exact passage relevance.
+The user interface, constructed in Streamlit, splits into two components managed by optimized caching wrappers (st.cache_resource / st.cache_data) to prevent redundant model execution. The Search Desk maximizes layout scannability by isolating a tight, 25-word summary bubble surrounding query match targets to provide rapid conceptual answers, pairing each hit with an interactive media player synced directly to that exact playback second. Meanwhile, the Transcript Inspector acts as a master document matrix, reassembling the underlying data fragments into a beautifully continuous, chronological reading script. When backed by dedicated GPU acceleration, this dual-stage PyTorch pipeline delivers excellent real-time scaling efficiency, transcribing a 63-minute podcast in under 4 minutes.
 
