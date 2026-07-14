@@ -52,15 +52,6 @@ sources
 [Housing Supply](https://www.gov.uk/government/statistical-data-sets/live-tables-on-house-building) Table 251 A
 
 
-
-[Python Minesweeper: GUI & Logic Engine](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/FinalProject.py)
-
-The technical architecture utilizes multiple Python files, leveraging Tkinter for the graphical interface and Canvas for grid rendering. I developed a custom event-handling system to manage mouse clicks, using coordinate mapping to link visual squares directly to an underlying multi-dimensional logic array. Additionally, I programmed a randomized mine generator and a mathematical neighbor-check algorithm to calculate nearby threats in real time.
-
-The project successfully translated classical logic puzzle mechanics into a functional, lightweight desktop game. By seamlessly connecting the visual front-end grid to the back-end computation engine, the application provides an engaging and responsive user experience that handles complex cascading game logic with zero operational lag.
-
-Building this desktop game required applying strict Object-Oriented Programming (OOP) principles to cleanly separate the visual frontend interface from the backend engine. I engineered an event-driven architecture to handle real-time user input seamlessly, mapping those interactions directly to multi-dimensional array logic that computed state changes on the fly. This project allowed me to gain strong, practical experience with desktop interface rendering using Python, Tkinter, and Canvas.
-
 [PyTorch Transcription Engine](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/app.py)
 
 This hardware-accelerated desktop application utilizes a deep-learning pipeline built on PyTorch to transform raw audio into an intelligent, fully searchable knowledge base. The ingestion workflow streams raw audio formats, normalizes them to a flat 16,000 hertz mono wave array, and utilizes a PyTorch-backed OpenAI Whisper-Small transformer model to decode text strings chronologically with precise, absolute timeline offsets.
