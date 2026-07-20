@@ -1,0 +1,18 @@
+user:
+  outputs:
+    default:
+      account: HMPMXKU-FA92135
+      auth_type: keypair
+      client_session_keep_alive: false
+      connect_retries: 3
+      connect_timeout: 30
+      database: BASEBALL_DB
+      private_key_path: /tmp/.dbt/keyfile.pem
+      retry_on_database_errors: true
+      role: null
+      schema: dbt_akim
+      threads: 6
+      type: snowflake
+      user: AARONKIM
+      warehouse: COMPUTE_WH
+  target: default
