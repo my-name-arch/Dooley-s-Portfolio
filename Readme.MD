@@ -61,7 +61,7 @@ The project successfully translated classical logic puzzle mechanics into a func
 
 Building this desktop game required applying strict Object-Oriented Programming (OOP) principles to cleanly separate the visual frontend interface from the backend engine. I engineered an event-driven architecture to handle real-time user input seamlessly, mapping those interactions directly to multi-dimensional array logic that computed state changes on the fly. This project allowed me to gain strong, practical experience with desktop interface rendering using Python, Tkinter, and Canvas.
 
-[PyTorch Transcription Engine] (​​https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/app.py)
+[PyTorch Transcription Engine](​​https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/app.py)
 
 This hardware-accelerated desktop application utilizes a deep-learning pipeline built on PyTorch to transform raw audio into an intelligent, fully searchable knowledge base. The ingestion workflow streams raw audio formats, normalizes them to a flat 16,000 hertz mono wave array, and utilizes a PyTorch-backed OpenAI Whisper-Small transformer model to decode text strings chronologically with precise, absolute timeline offsets.
 
