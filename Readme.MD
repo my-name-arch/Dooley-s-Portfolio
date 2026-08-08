@@ -19,6 +19,7 @@ The project, implemented in R Studio, involved advanced data wrangling with ggpl
 The project successfully moved beyond anecdotal coaching cliches to provide a quantifiable basis and data-driven framework for evaluating team potential in high-stakes, single-elimination environments. The analysis demonstrated a causal link between defensive performance—specifically Effective Field Goal Percentage Allowed—and championship-level success, proving that defensive consistency is a superior predictor of March Madness Success.
 
 To execute this research, I applied advanced statistical modeling and predictive modeling techniques to evaluate the core variables driving team performance. By leveraging R and ggplot, I performed extensive regression analysis alongside precise feature engineering, which allowed me to isolate critical data trends. Additionally, implementing Z-score standardization proved essential for normalizing the data, ensuring that all metrics could be objectively scaled and compared across different eras and playing styles.
+
 [Real Estate Model](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/AutoMl.pdf)
 
 4 Parts in Workflows: Building Dataset, Cleaning, AutoMl, Testing.
@@ -40,7 +41,7 @@ sources
 
 [Housing Supply](https://www.gov.uk/government/statistical-data-sets/live-tables-on-house-building) Table 251 A
 
-[PyTorch Transcription Engine](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/app.py)
+[PyTorch Transcription Engine](https://github.com/my-name-arch/PytorchProject)
 
 This hardware-accelerated desktop application utilizes a deep-learning pipeline built on PyTorch to transform raw audio into an intelligent, fully searchable knowledge base. The ingestion workflow streams raw audio formats, normalizes them to a flat 16,000 hertz mono wave array, and utilizes a PyTorch-backed OpenAI Whisper-Small transformer model to decode text strings chronologically with precise, absolute timeline offsets.
 
