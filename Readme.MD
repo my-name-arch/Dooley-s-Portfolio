@@ -19,17 +19,6 @@ The project, implemented in R Studio, involved advanced data wrangling with ggpl
 The project successfully moved beyond anecdotal coaching cliches to provide a quantifiable basis and data-driven framework for evaluating team potential in high-stakes, single-elimination environments. The analysis demonstrated a causal link between defensive performance—specifically Effective Field Goal Percentage Allowed—and championship-level success, proving that defensive consistency is a superior predictor of March Madness Success.
 
 To execute this research, I applied advanced statistical modeling and predictive modeling techniques to evaluate the core variables driving team performance. By leveraging R and ggplot, I performed extensive regression analysis alongside precise feature engineering, which allowed me to isolate critical data trends. Additionally, implementing Z-score standardization proved essential for normalizing the data, ensuring that all metrics could be objectively scaled and compared across different eras and playing styles.
-
-[Music Suggestion Application](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/MusicRecs-Pipeline-Final.Rmd)
-View the demo video: [Demo Video](https://drive.google.com/file/d/1-XFW0a-M3kWb344YoHAHhmhxqID5gpMD/view?usp=sharing)
-
-Developed in RStudio, the technical workflow began with comprehensive data wrangling to eliminate duplicates and perform one-hot encoding on categorical genre variables. I then implemented a k-Nearest Neighbors (KNN) machine learning algorithm to generate recommendations. This approach was specifically chosen because KNN effectively identifies clusters of similar items within the dataset based on feature proximity.
-
-By utilizing a Shiny app, I transformed these algorithmic recommendations into a dynamic and interactive user experience. The resulting music suggestion application successfully identifies the most similar tracks based on a specific user input, allowing music fans to discover new content effortlessly through a responsive web interface.
-
-This project allowed me to deploy an end-to-end machine learning data pipeline that integrated categorical data encoding with clustering algorithms to generate real-time user recommendations. By constructing an interactive data visualization interface, I translated complex algorithmic outputs into a highly intuitive user experience. Ultimately, this application serves as a strong reflection of my technical development in R, uniquely merging my academic background in music with practical data science application.
-
-
 [Real Estate Model](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/AutoMl.pdf)
 
 4 Parts in Workflows: Building Dataset, Cleaning, AutoMl, Testing.
@@ -50,16 +39,6 @@ sources
 [CPI](https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceinflation)
 
 [Housing Supply](https://www.gov.uk/government/statistical-data-sets/live-tables-on-house-building) Table 251 A
-
-
-
-[Python Minesweeper: GUI & Logic Engine](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/FinalProject.py)
-
-The technical architecture utilizes multiple Python files, leveraging Tkinter for the graphical interface and Canvas for grid rendering. I developed a custom event-handling system to manage mouse clicks, using coordinate mapping to link visual squares directly to an underlying multi-dimensional logic array. Additionally, I programmed a randomized mine generator and a mathematical neighbor-check algorithm to calculate nearby threats in real time.
-
-The project successfully translated classical logic puzzle mechanics into a functional, lightweight desktop game. By seamlessly connecting the visual front-end grid to the back-end computation engine, the application provides an engaging and responsive user experience that handles complex cascading game logic with zero operational lag.
-
-Building this desktop game required applying strict Object-Oriented Programming (OOP) principles to cleanly separate the visual frontend interface from the backend engine. I engineered an event-driven architecture to handle real-time user input seamlessly, mapping those interactions directly to multi-dimensional array logic that computed state changes on the fly. This project allowed me to gain strong, practical experience with desktop interface rendering using Python, Tkinter, and Canvas.
 
 [PyTorch Transcription Engine](https://github.com/my-name-arch/Dooley-s-Portfolio/blob/main/.github/workflows/app.py)
 
